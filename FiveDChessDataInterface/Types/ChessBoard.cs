@@ -50,7 +50,14 @@ namespace FiveDChessDataInterface
                 }
 
                 var isBlack = colorByte == 2;
-                var kind = Enum.IsDefined(typeof(PieceKind), pieceByte) ? (PieceKind)pieceByte : PieceKind.Unknown;
+                PieceKind kind;
+                if(Enum.IsDefined(typeof(PieceKind), pieceByte)){
+                    kind=(PieceKind)pieceByte;
+                }
+                else{
+                    Console.WriteLine($"{pieceByte}");
+                    kind=PieceKind.Unknown;
+                }
 
                 return new ChessPiece(kind, isBlack);
             }
@@ -79,7 +86,28 @@ namespace FiveDChessDataInterface
                     PieceKind.Unicorn => "U",
                     PieceKind.Dragon => "D",
                     PieceKind.Princess => "q",
+                    PieceKind.Brawn => "W",
                     _ => throw new NotImplementedException()
+                };
+            }
+            public string Notation()
+            {
+                return this.Kind switch
+                {
+                    PieceKind.Pawn => "",
+                    PieceKind.Knight => "N",
+                    PieceKind.Bishop => "B",
+                    PieceKind.Rook => "R",
+                    PieceKind.Queen => "Q",
+                    PieceKind.King => "K",
+                    PieceKind.Unicorn => "U",
+                    PieceKind.Dragon => "D",
+                    PieceKind.Princess => "S",
+                    PieceKind.Brawn => "W",
+                    PieceKind.RoyalQueen => "Y",
+                    PieceKind.AlsoUnknown => "?",
+                    PieceKind.Commoner => "C",
+                    _ => "?"//((int)this.Kind).ToString()
                 };
             }
 
@@ -101,7 +129,11 @@ namespace FiveDChessDataInterface
                 King,
                 Unicorn,
                 Dragon,
-                Princess // TODO confirm value
+                AlsoUnknown,
+                Brawn,
+                Princess,
+                RoyalQueen,
+                Commoner
             }
         }
 
