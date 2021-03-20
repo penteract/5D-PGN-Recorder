@@ -102,7 +102,10 @@ namespace DataInterfaceConsoleTest
                                     Console.Write($"\r\n{turnNumber}.");
                                     lastRun+=$"\r\n{turnNumber}.";
                                 }
-                                else Console.Write($"/ ");
+                                else{
+									Console.Write($"/ ");
+									lastRun+=$"/ ";
+								}
                             }
                             if (movetype==0){
                                 Console.Write($"({mem.moveSourceL}T{mem.moveSourceT-firstT}){board.Pieces[mem.moveSourceX*board.width+mem.moveSourceY].Notation()}{(char)(97+mem.moveSourceX)}{1+mem.moveSourceY}{(char)(97+mem.moveDestX)}{1+mem.moveDestY} ");
