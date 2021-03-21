@@ -41,7 +41,7 @@ namespace DataInterfaceConsoleTest
                 if (cnt != oldCnt)
                 {
                     if (cnt==0 && oldCnt>5){
-                        var filename = "5dpgn"+DateTime.Now.ToString("yyyyMMdd_hhmmss")+".txt";
+                        var filename = "5dpgn"+DateTime.Now.ToString("yyyyMMdd_HHmmss")+".txt";
                         File.WriteAllText(filename,"[Mode \"5D\"]"+lastRun);
                     }
                     lastRun="";
