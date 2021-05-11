@@ -338,3 +338,8 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
+
+
+#5dpgn files
+5dpgn*.txt
+*.5dpgn

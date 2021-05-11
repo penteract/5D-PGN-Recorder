@@ -19,14 +19,14 @@ namespace DataInterfaceConsoleTest
             Console.WriteLine("Process found. Initializing...");
             di.Initialize();
             Console.WriteLine("Ready!");
+            Console.WriteLine("This program will create files recording games longer than 5 moves when they are finished");
+            Console.WriteLine("It will also play a sound specified by tick.wav when a player in a timed game has used 1/3 of their time since the start of their turn or the previous tick");
 
             DoDataDump(di);
         }
 
         private static void DoDataDump(DataInterface di)
         {
-
-
             var chessboardLocation = di.MemLocChessArrayPointer.GetValue();
 
             var ccForegroundDefault = Console.ForegroundColor;
@@ -35,8 +35,32 @@ namespace DataInterfaceConsoleTest
             int oldCnt = 0;
             string lastRun="";
             int firstT=-100; // Used to get turn indices right on T0
+			var lastP = di.GetCurrentPlayersTurn();
+			var lastTime=di.GetCurT();
+			System.Media.SoundPlayer player = new System.Media.SoundPlayer("Tick.wav");
             while (true)
             {
+				var thisP = di.GetCurrentPlayersTurn();
+				var thisTime = di.GetCurT();
+				if(thisP!=lastP){// Reset timers
+				    lastTime=thisTime;
+					Console.WriteLine($"{{{lastTime}}}");
+					lastP=thisP;
+				}
+				if (lastTime!=0 && (thisTime-1)*3<=(lastTime-1)*2){//Should always tick if thisTime==1 or thisTime==0
+					player.Play();
+					lastTime=thisTime;
+					//System.Media.SystemSounds.Exclamation.Play();
+				}
+				// Potential reasons to beep:
+				// time remaining is a power of 2
+				// 1 minute remaining (only beep once for this?)
+				// half the time you started the turn with
+				// When you use up your increment
+				// when you're significantly behind your opponent
+				
+				//if(di.GetCurT()<600)System.Media.SystemSounds.Exclamation.Play();
+				
                 var cnt = di.GetChessBoardAmount();
                 if (cnt != oldCnt)
                 {
