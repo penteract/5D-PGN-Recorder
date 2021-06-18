@@ -10,5 +10,9 @@
             this.Width = width;
             this.Height = height;
         }
+        
+        public string toString(){
+            return $"{Width}x{Height}";
+        }
     }
 }

@@ -2,6 +2,8 @@
 using System;
 using System.Threading;
 using System.IO;
+using System.Collections.Generic;
+using FiveDChessDataInterface.Types;
 
 namespace DataInterfaceConsoleTest
 {
@@ -20,7 +22,7 @@ namespace DataInterfaceConsoleTest
             di.Initialize();
             Console.WriteLine("Ready!");
             Console.WriteLine("This program will create files recording games longer than 5 moves when they are finished");
-            Console.WriteLine("It will also play a sound specified by tick.wav when a player in a timed game has used 1/3 of their time since the start of their turn or the previous tick");
+            Console.WriteLine("It will also play a sound specified by Tick.wav when a player in a timed game has used 1/3 of their time since the start of their turn or the previous tick");
 
             DoDataDump(di);
         }
@@ -36,21 +38,31 @@ namespace DataInterfaceConsoleTest
             string lastRun="";
             int firstT=-100; // Used to get turn indices right on T0
 			var lastP = di.GetCurrentPlayersTurn();
-			var lastTime=di.GetCurT();
+			var lastTime = di.GetCurT();
 			System.Media.SoundPlayer player = new System.Media.SoundPlayer("Tick.wav");
+            List<int> times = new List<int>();
+            int oldTurn = 0;
+            bool written = false;
+            var oldState = GameState.NotStarted;
+            var startDate = "";
+            var startTime = "";
+            var localPlayer = -1;
             while (true)
             {
 				var thisP = di.GetCurrentPlayersTurn();
 				var thisTime = di.GetCurT();
 				if(thisP!=lastP){// Reset timers
 				    lastTime=thisTime;
-					Console.WriteLine($"{{{lastTime}}}");
 					lastP=thisP;
 				}
 				if (lastTime!=0 && (thisTime-1)*3<=(lastTime-1)*2){//Should always tick if thisTime==1 or thisTime==0
-					player.Play();
-					lastTime=thisTime;
-					//System.Media.SystemSounds.Exclamation.Play();
+                    try{
+                        player.Play();
+                    }
+                    catch {
+                    }
+                    lastTime=thisTime;
+                    //System.Media.SystemSounds.Exclamation.Play();
 				}
 				// Potential reasons to beep:
 				// time remaining is a power of 2
@@ -59,94 +71,119 @@ namespace DataInterfaceConsoleTest
 				// When you use up your increment
 				// when you're significantly behind your opponent
 				
-				//if(di.GetCurT()<600)System.Media.SystemSounds.Exclamation.Play();
-				
+				//di.showPdata();
                 var cnt = di.GetChessBoardAmount();
-                if (cnt != oldCnt)
+                var turn = di.GetCurrentPlayersTurn();
+                //turn != oldTurn is there to make sure we record times, but we shouldn't rely 
+                // on noticing this change because we only poll twice per second
+                // I think there's technically a case we miss where a player undoes a move
+                // then submits, then the opponent makes a one-move action and submits.
+                // there's only a problem if that all happens in half a second, so I'm not too worried, but if we find the memory location of the move number,
+                //that would be better than tracking the turn.
+                var state = di.GetCurrentGameState();
+                if (cnt != oldCnt || turn != oldTurn || state!=oldState)
                 {
-                    if (cnt==0 && oldCnt>5){
+                    if (cnt==0 && oldCnt>5 && !written){
                         var filename = "5dpgn"+DateTime.Now.ToString("yyyyMMdd_HHmmss")+".txt";
-                        File.WriteAllText(filename,"[Mode \"5D\"]"+lastRun);
+                        File.WriteAllText(filename,lastRun);
+                        Console.WriteLine($"written to file '{filename}'");
                     }
-                    lastRun="";
+                    if (oldCnt==0){
+                        times = new List<int>();
+                        written = false;
+                        startDate = DateTime.Now.ToString("yyyy.MM.dd");
+                        startTime = DateTime.Now.ToString("HH:mm:ss (zzz)");
+                        localPlayer = di.whichPlayerIsLocal(); //0 white, 1 black, 2 both
+                    }
+                lastRun=$"[Mode \"5D\"]\r\n[Result \"{GameStateToResult(state)}\"]\r\n[Date \"{startDate}\"]\r\n[Time \"{startTime}\"]\r\n[Size \"{di.GetChessBoardSize().toString()}\"]";
+                    if(localPlayer==1){
+                        lastRun+="\r\n[White \"Opponent\"]";
+                    }
+                    if(localPlayer==0){
+                        lastRun+="\r\n[Black \"Opponent\"]";
+                    }
                     oldCnt = cnt;
+                    oldTurn = turn;
+                    oldState = state;
                     var cbs = di.GetChessBoards();
 
                     //Console.Clear();
                     int lastCol = -1;
                     int turnNumber = 0;
-                    /* Debug:
-                    for (int i = 0; i < cbs.Count; i++){
-                        var board = cbs[i];
-                        var mem = board.cbm;
-                        
-                        Console.WriteLine($"board{mem.boardId} (L{board.cbm.timeline:+#;-#;0}T{board.cbm.turn + 1}): val04?{mem.val04} moveNumber?{mem.moveNumber} nextInTimeline?{mem.nextInTimelineBoardId} branchesFrom{mem.previousBoardId} {mem.val19} orig{mem.ttPieceOriginId} ");
-                        Console.WriteLine($"({mem.moveSourceL}T{mem.moveSourceT+1}){(char)(97+mem.moveSourceX)}{1+mem.moveSourceY}>({mem.moveDestL}T{mem.moveDestT+1}){(char)(97+mem.moveDestX)}{1+mem.moveDestY} ");
-                    }*/
                     for (int i = 0; i < cbs.Count; i++)
                     {
                         var board = cbs[i];
                         var mem1 = board.cbm;
-                        //var mem=mem1;
-                        //Console.WriteLine($"\nboard{mem.boardId} (L{board.cbm.timeline:+#;-#;0}T{board.cbm.turn + 1}): parent?{mem.parentBoardId} nextInTimeline?{mem.nextInTimelineBoardId} branchesFrom{mem.previousBoardId} {mem.val19} orig{mem.ttPieceOriginId} ");
                         if (mem1.boardId!=i) Console.WriteLine("Warning: id does not match index");
                         if (mem1.previousBoardId==-1) continue;
-                        var mem = cbs[mem1.previousBoardId].cbm;
                         board = cbs[mem1.previousBoardId];
-                        //Console.WriteLine($"\nparent{mem.boardId} (L{mem.timeline:+#;-#;0}T{mem.turn + 1}): prev?{mem.previousBoardId} nextInTimeline?{mem.nextInTimelineBoardId} branchesFrom{mem.previousBoardId} {mem.val19} orig{mem.ttPieceOriginId} ");
-                        if (!(mem.moveSourceL==0 && mem.moveSourceT==0 && mem.moveSourceX==0 && mem.moveSourceY==0
-                            && mem.moveDestL==0 && mem.moveDestT==0 && mem.moveDestX==0 && mem.moveDestY==0)){
-                            var movetype=0;//Physical
-                            //work out if it's a branch or a hop
-                            if (i+1<cbs.Count){
-                                if (cbs[i+1].cbm.moveNumber==mem1.moveNumber){
-                                    if (cbs[i+1].cbm.timeline==mem.moveDestL){
-                                        movetype=1; //Hop
-                                    }
-                                    else{
-                                        movetype=2; //Branch
-                                    }
-                                    i+=1;
-                                }
-                            }
-                                
-                                    
-                            if (mem.isBlacksMove!=lastCol){
-                                lastCol = mem.isBlacksMove;
-                                char c = 'w';
-                                if(lastCol!=0) c='b';
-                                else{
-                                    turnNumber+=1;
-                                    if(turnNumber==1){
-                                        firstT=mem.moveSourceT-1;
-                                    }
-                                }
-                                //Console.Write($"\n{turnNumber}{c}.");
-                                if(c=='w'){
-                                    Console.Write($"\r\n{turnNumber}.");
-                                    lastRun+=$"\r\n{turnNumber}.";
+                        var mem = board.cbm;
+                        if (mem.moveSourceL==0 && mem.moveSourceT==0 && mem.moveSourceX==0 && mem.moveSourceY==0
+                            && mem.moveDestL==0 && mem.moveDestT==0 && mem.moveDestX==0 && mem.moveDestY==0) continue;
+                          
+                        var movetype=0;//Physical
+                        //work out if it's a branch or a hop
+                        if (i+1<cbs.Count){
+                            if (cbs[i+1].cbm.creatingMoveNumber==mem1.creatingMoveNumber){
+                                if (cbs[i+1].cbm.timeline==mem.moveDestL){
+                                    movetype=1; //Hop
                                 }
                                 else{
-									Console.Write($"/ ");
-									lastRun+=$"/ ";
-								}
-                            }
-                            if (movetype==0){
-                                Console.Write($"({mem.moveSourceL}T{mem.moveSourceT-firstT}){board.Pieces[mem.moveSourceX*board.width+mem.moveSourceY].Notation()}{(char)(97+mem.moveSourceX)}{1+mem.moveSourceY}{(char)(97+mem.moveDestX)}{1+mem.moveDestY} ");
-                                lastRun+=($"({mem.moveSourceL}T{mem.moveSourceT-firstT}){board.Pieces[mem.moveSourceX*board.width+mem.moveSourceY].Notation()}{(char)(97+mem.moveSourceX)}{1+mem.moveSourceY}{(char)(97+mem.moveDestX)}{1+mem.moveDestY} ");
-                            }
-                            else if (movetype==1){
-                                Console.Write($"({mem.moveSourceL}T{mem.moveSourceT-firstT}){board.Pieces[mem.moveSourceX*board.width+mem.moveSourceY].Notation()}{(char)(97+mem.moveSourceX)}{1+mem.moveSourceY}>({mem.moveDestL}T{mem.moveDestT-firstT}){(char)(97+mem.moveDestX)}{1+mem.moveDestY} ");
-                                lastRun+=($"({mem.moveSourceL}T{mem.moveSourceT-firstT}){board.Pieces[mem.moveSourceX*board.width+mem.moveSourceY].Notation()}{(char)(97+mem.moveSourceX)}{1+mem.moveSourceY}>({mem.moveDestL}T{mem.moveDestT-firstT}){(char)(97+mem.moveDestX)}{1+mem.moveDestY} ");
-                            }
-                            else{ //movetype==2
-                                Console.Write($"({mem.moveSourceL}T{mem.moveSourceT-firstT}){board.Pieces[mem.moveSourceX*board.width+mem.moveSourceY].Notation()}{(char)(97+mem.moveSourceX)}{1+mem.moveSourceY}>>({mem.moveDestL}T{mem.moveDestT-firstT}){(char)(97+mem.moveDestX)}{1+mem.moveDestY} ");
-                                lastRun+=($"({mem.moveSourceL}T{mem.moveSourceT-firstT}){board.Pieces[mem.moveSourceX*board.width+mem.moveSourceY].Notation()}{(char)(97+mem.moveSourceX)}{1+mem.moveSourceY}>>({mem.moveDestL}T{mem.moveDestT-firstT}){(char)(97+mem.moveDestX)}{1+mem.moveDestY} ");
+                                    movetype=2; //Branch
+                                }
+                                i+=1;
                             }
                         }
-                        //Console.WriteLine($"Board: id {mem.boardId} L{board.cbm.timeline:+#;-#;0}T{board.cbm.turn + 1}");
-                        //Console.WriteLine($"move: ({mem.moveSourceL}T{mem.moveSourceT+1}){(char)(97+mem.moveSourceX)}{1+mem.moveSourceY} to ({mem.moveDestL}T{mem.moveDestT+1}){(char)(97+mem.moveDestX)}{1+mem.moveDestY}");
-
+                        
+                        if (mem.isBlacksMove!=lastCol){
+                            lastCol = mem.isBlacksMove;
+                            char c = 'w';
+                            if (lastCol==1){
+                                c = 'b';
+                            }
+                            else{
+                                turnNumber+=1;
+                                if(turnNumber==1){
+                                    firstT=mem.moveSourceT-1;
+                                    if (firstT==0)
+                                        lastRun+=$"\r\n[Board \"Standard - Turn Zero\"]";
+                                }
+                            }
+                            //Console.Write($"\n{turnNumber}{c}.");
+                            if(c=='w'){
+                                lastRun+=$"\r\n{turnNumber}.";
+                            }
+                            else{
+                                lastRun+=$"/ ";
+                            }
+                            var n = turnNumber*2 + lastCol - 1;
+                            if ( times.Count < n){
+                                times.Add(c=='w'?di.GetWT():di.GetBT());
+                            }
+                            else if(times.Count == n){
+                                times[n-1] = c=='w'?di.GetWT():di.GetBT();
+                            }
+                            if(times[0]!=0){ lastRun+=$"{{{times[n-1]}}}";}
+                        }
+                        if (movetype==0){
+                            lastRun+=($"({mem.moveSourceL}T{mem.moveSourceT-firstT}){board.Pieces[mem.moveSourceX*board.width+mem.moveSourceY].Notation()}{(char)(97+mem.moveSourceX)}{1+mem.moveSourceY}{(char)(97+mem.moveDestX)}{1+mem.moveDestY} ");
+                        }
+                        else if (movetype==1){
+                            lastRun+=($"({mem.moveSourceL}T{mem.moveSourceT-firstT}){board.Pieces[mem.moveSourceX*board.width+mem.moveSourceY].Notation()}{(char)(97+mem.moveSourceX)}{1+mem.moveSourceY}>({mem.moveDestL}T{mem.moveDestT-firstT}){(char)(97+mem.moveDestX)}{1+mem.moveDestY} ");
+                        }
+                        else{ //movetype==2
+                            lastRun+=($"({mem.moveSourceL}T{mem.moveSourceT-firstT}){board.Pieces[mem.moveSourceX*board.width+mem.moveSourceY].Notation()}{(char)(97+mem.moveSourceX)}{1+mem.moveSourceY}>>({mem.moveDestL}T{mem.moveDestT-firstT}){(char)(97+mem.moveDestX)}{1+mem.moveDestY} ");
+                        }
+                    }
+                    Console.WriteLine(lastRun);
+                    if (( state==GameState.EndedBlackWon
+                          || state==GameState.EndedDraw
+                          || state==GameState.EndedWhiteWon)
+                        && !written){
+                        written = true;
+                        var filename = "5dpgn"+DateTime.Now.ToString("yyyyMMdd_HHmmss")+".txt";
+                        File.WriteAllText(filename,lastRun);
+                        Console.WriteLine($"written to file '{filename}'");
                     }
                 }
                 else
@@ -155,7 +192,18 @@ namespace DataInterfaceConsoleTest
                 }
             }
         }
-
+        
+        private static string GameStateToResult(GameState s){
+            return s switch {
+                GameState.NotStarted => "NotStarted",
+                GameState.Running => "*",
+                GameState.EndedDraw => "1/2-1/2",
+                GameState.EndedWhiteWon => "1-0",
+                GameState.EndedBlackWon => "0-1",
+                _ => "error"
+            };
+        }
+        
         internal static void WriteConsoleColored(string text, ConsoleColor foreground, ConsoleColor background)
         {
             var fOld = Console.ForegroundColor;

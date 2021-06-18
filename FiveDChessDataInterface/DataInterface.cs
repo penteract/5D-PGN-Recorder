@@ -26,9 +26,25 @@ namespace FiveDChessDataInterface
 		public MemoryLocation<int> MemLocBlackTime { get; private set; }
 		public MemoryLocation<int> MemLocWhiteIncrement { get; private set; }
 		public MemoryLocation<int> MemLocBlackIncrement { get; private set; }
+        public MemoryLocation<int> MemLocWhoAmI { get; private set; }
+        public MemoryLocation<int> MemLocWhoAmI2 { get; private set; }
+        public MemoryLocation<int> MemLocPerspective { get; private set; }
+        
         public int GetWT() => this.MemLocWhiteTime.GetValue()+this.MemLocWhiteIncrement.GetValue();
         public int GetBT() => this.MemLocBlackTime.GetValue()+this.MemLocBlackIncrement.GetValue();
 		public int GetCurT() => this.MemLocCurrentPlayersTurn.GetValue()==0?GetWT():GetBT();
+        
+        
+        public void showPdata(){
+            Console.WriteLine($"who1 : {MemLocWhoAmI.GetValue()}  |  who2  : {MemLocWhoAmI2.GetValue()}  |  persp : {MemLocPerspective.GetValue()}");
+        }
+        
+        public int whichPlayerIsLocal(){
+            //int v1 = MemLocWhoAmI.GetValue();
+            //int v2 = MemLocWhoAmI2.GetValue();
+            //return v1==v2?v1:2;
+            return MemLocWhoAmI2.GetValue();
+        }
 
 
         public IntPtr GetGameHandle() => this.GameProcess.Handle;
@@ -121,6 +137,12 @@ namespace FiveDChessDataInterface
             this.MemLocBlackTime = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, 0x1AC);
             this.MemLocWhiteIncrement = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, 0x1B0);
             this.MemLocBlackIncrement = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, 0x1B4);
+            
+            this.MemLocWhoAmI = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, -0x610);
+            this.MemLocWhoAmI2 = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, -0x44);
+            this.MemLocPerspective = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, -0x40);
+            //possibilities: -0x610, -0x44
+            // -0x40 is the perspective
 			
 			
         }
