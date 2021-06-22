@@ -200,34 +200,48 @@ namespace FiveDChessDataInterface
             else
             {
                 var whoWon = this.MemLocGameEndedWinner.GetValue();
+                var gs = this.MemLocGameState.GetValue();
+                Console.WriteLine($"gs: {gs},  gameendedWinner {whoWon}");
 
-                if (whoWon == -1)
+                if (gs == 0)
                 {
+                    if(whoWon!=-1){//
+                        Console.WriteLine("Unexpected Data - gs is 0(running) but winning player '{whoWon}' is not -1");
+                        //throw new UnexpectedChessDataException();
+                    }
                     return GameState.Running;
                 }
-                else
-                {
-                    if (whoWon == 0)
-                    {
+                if (gs==1){
+                    if(whoWon==0){
                         return GameState.EndedWhiteWon;
                     }
-                    else
-                    {
-                        var gs = this.MemLocGameState.GetValue();
-
-                        if (gs == 2)
-                        {
-                            return GameState.EndedDraw;
-                        }
-                        else if (gs == 1) // someone won, which can only be black
-                        {
-                            return GameState.EndedBlackWon;
-                        }
-                        else
-                        {
-                            throw new UnexpectedChessDataException();
-                        }
+                    if(whoWon==1){
+                        return GameState.EndedWhiteWon;
                     }
+                    else{
+                        Console.WriteLine("Unexpected Data - gs is 1(ended with winner) but winning player '{whoWon}' is not 0 or 1");
+                        return GameState.Unknown;
+                    }
+                }
+                if (gs==2){
+                    return GameState.EndedDraw;
+                }
+                if(gs==3){
+                    //Forfeit
+                    if(whoWon==0){
+                        return GameState.EndedWhiteWon;
+                    }
+                    if(whoWon==1){
+                        return GameState.EndedWhiteWon;
+                    }
+                    else{
+                        Console.WriteLine("Unexpected Data - gs is 1(forfeit) but winning player '{whoWon}' is not 0 or 1");
+                        return GameState.Unknown;
+                    }
+                }
+                else{
+                    Console.WriteLine("Unexpected Data - gs is not 0,1,2 or 3");
+                    return GameState.Unknown;
                 }
             }
         }

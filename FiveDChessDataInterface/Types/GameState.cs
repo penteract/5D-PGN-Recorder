@@ -6,6 +6,7 @@
         Running,
         EndedDraw,
         EndedWhiteWon,
-        EndedBlackWon
+        EndedBlackWon,
+        Unknown
     }
 }

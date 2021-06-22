@@ -163,7 +163,10 @@ namespace DataInterfaceConsoleTest
                             else if(times.Count == n){
                                 times[n-1] = c=='w'?di.GetWT():di.GetBT();
                             }
-                            if(times[0]!=0){ lastRun+=$"{{{times[n-1]}}}";}
+                            if(times[0]!=0){
+                                var t = times[n-1];
+                                lastRun+=$"{{{t/60}:{t%60:00}}}";
+                            }
                         }
                         if (movetype==0){
                             lastRun+=($"({mem.moveSourceL}T{mem.moveSourceT-firstT}){board.Pieces[mem.moveSourceX*board.width+mem.moveSourceY].Notation()}{(char)(97+mem.moveSourceX)}{1+mem.moveSourceY}{(char)(97+mem.moveDestX)}{1+mem.moveDestY} ");
@@ -179,7 +182,8 @@ namespace DataInterfaceConsoleTest
                     if (( state==GameState.EndedBlackWon
                           || state==GameState.EndedDraw
                           || state==GameState.EndedWhiteWon)
-                        && !written){
+                        && !written
+                        && cnt>5){
                         written = true;
                         var filename = "5dpgn"+DateTime.Now.ToString("yyyyMMdd_HHmmss")+".txt";
                         File.WriteAllText(filename,lastRun);
