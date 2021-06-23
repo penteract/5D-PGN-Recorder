@@ -201,7 +201,6 @@ namespace FiveDChessDataInterface
             {
                 var whoWon = this.MemLocGameEndedWinner.GetValue();
                 var gs = this.MemLocGameState.GetValue();
-                Console.WriteLine($"gs: {gs},  gameendedWinner {whoWon}");
 
                 if (gs == 0)
                 {
@@ -236,6 +235,19 @@ namespace FiveDChessDataInterface
                     }
                     else{
                         Console.WriteLine("Unexpected Data - gs is 1(forfeit) but winning player '{whoWon}' is not 0 or 1");
+                        return GameState.Unknown;
+                    }
+                }
+                if(gs==5){
+                    //Time
+                    if(whoWon==0){
+                        return GameState.EndedWhiteWon;
+                    }
+                    if(whoWon==1){
+                        return GameState.EndedWhiteWon;
+                    }
+                    else{
+                        Console.WriteLine("Unexpected Data - gs is 1(timeout) but winning player '{whoWon}' is not 0 or 1");
                         return GameState.Unknown;
                     }
                 }
