@@ -98,8 +98,10 @@ namespace DataInterfaceConsoleTest
                 lastRun=$"[Mode \"5D\"]\r\n[Result \"{GameStateToResult(state)}\"]\r\n[Date \"{startDate}\"]\r\n[Time \"{startTime}\"]\r\n[Size \"{di.GetChessBoardSize().toString()}\"]";
                     if(localPlayer==1){
                         lastRun+="\r\n[White \"Opponent\"]";
+                        //lastRun+="\r\n[Black \"tesseract\"]";
                     }
                     if(localPlayer==0){
+                        //lastRun+="\r\n[White \"tesseract\"]";
                         lastRun+="\r\n[Black \"Opponent\"]";
                     }
                     oldCnt = cnt;
