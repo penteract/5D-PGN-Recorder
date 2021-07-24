@@ -218,7 +218,7 @@ namespace FiveDChessDataInterface
                         return GameState.EndedWhiteWon;
                     }
                     else{
-                        Console.WriteLine("Unexpected Data - gs is 1(ended with winner) but winning player '{whoWon}' is not 0 or 1");
+                        Console.WriteLine("Unexpected Data - gs is 1(ended with checkmate) but winning player '{whoWon}' is not 0 or 1");
                         return GameState.Unknown;
                     }
                 }
@@ -234,7 +234,7 @@ namespace FiveDChessDataInterface
                         return GameState.EndedWhiteWon;
                     }
                     else{
-                        Console.WriteLine("Unexpected Data - gs is 1(forfeit) but winning player '{whoWon}' is not 0 or 1");
+                        Console.WriteLine("Unexpected Data - gs is 3(forfeit) but winning player '{whoWon}' is not 0 or 1");
                         return GameState.Unknown;
                     }
                 }
@@ -247,12 +247,12 @@ namespace FiveDChessDataInterface
                         return GameState.EndedWhiteWon;
                     }
                     else{
-                        Console.WriteLine("Unexpected Data - gs is 1(timeout) but winning player '{whoWon}' is not 0 or 1");
+                        Console.WriteLine("Unexpected Data - gs is 5(timeout) but winning player '{whoWon}' is not 0 or 1");
                         return GameState.Unknown;
                     }
                 }
                 else{
-                    Console.WriteLine("Unexpected Data - gs is not 0,1,2 or 3");
+                    Console.WriteLine("Unexpected Data - gs is not 0,1,2,3 or 5");
                     return GameState.Unknown;
                 }
             }
