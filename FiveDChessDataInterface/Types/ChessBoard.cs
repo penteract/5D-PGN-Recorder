@@ -34,6 +34,30 @@ namespace FiveDChessDataInterface
                 }
             }
         }
+        
+        public string toFEN(string timeline, string turn){
+            var pieces="";
+            for (int y = height-1; y >= 0; y--)
+            {
+                if(y<height-1) pieces+="/";
+                for (int x = 0; x < width; x++)
+                {
+                    var p = Pieces[x*height+y];
+                    if(p.IsEmpty){
+                        var i=0;
+                        while(x<width && Pieces[x*height+y].IsEmpty){
+                            i += 1;
+                            x += 1;
+                        }
+                        pieces += $"{i}";
+                    }
+                    else{
+                        pieces += p.SingleLetterNotation();
+                    }
+                }
+            }
+            return $"\r\n[{pieces}:{timeline}:{turn}:{(cbm.isBlacksMove==0?'w':'b')}]";
+        }
 
         public class ChessPiece
         {
@@ -71,25 +95,16 @@ namespace FiveDChessDataInterface
 
                 return $"[{(this.IsBlack ? "B" : "W")}]{this.Kind}";
             }
-
+            
+            // For 5D FEN
             public string SingleLetterNotation()
             {
-                return this.Kind switch
-                {
-                    PieceKind.Unknown => "?",
-                    PieceKind.Pawn => "P",
-                    PieceKind.Knight => "N",
-                    PieceKind.Bishop => "B",
-                    PieceKind.Rook => "R",
-                    PieceKind.Queen => "Q",
-                    PieceKind.King => "K",
-                    PieceKind.Unicorn => "U",
-                    PieceKind.Dragon => "D",
-                    PieceKind.Princess => "q",
-                    PieceKind.Brawn => "W",
-                    _ => throw new NotImplementedException()
-                };
+                var p = this.Kind==PieceKind.Pawn?"P":this.Notation();
+                if (this.IsBlack) return p.ToLower();
+                else return p;
             }
+            
+            // For 5DPGN moves
             public string Notation()
             {
                 return this.Kind switch
