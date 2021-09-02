@@ -11,5 +11,4 @@ Note: The files produced contain your timezone (as an offset from UTC), so if yo
 While it should be stable for the most part, this program may still cause crashes/desyncs or other unexpected/unwanted behaviour, hence why the developers of this project cannot be held liable for any damage caused.
 
 ## Plans
-Config file (name, which tags to include, sound file, how and whether to present time, always use white's perspective)
-Automatic variant recognition (currently detects "Standard - Turn Zero", but I'm not sure it's always accurate when it claims that)
+Config file (name, which tags to include, sound file, how and whether to include time, always use white's perspective)

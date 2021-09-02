@@ -52,7 +52,7 @@ namespace FiveDChessDataInterface
                         pieces += $"{i}";
                     }
                     else{
-                        pieces += p.SingleLetterNotation();
+                        pieces += p.FENSymbol();
                     }
                 }
             }
@@ -97,9 +97,15 @@ namespace FiveDChessDataInterface
             }
             
             // For 5D FEN
-            public string SingleLetterNotation()
-            {
-                var p = this.Kind==PieceKind.Pawn?"P":this.Notation();
+            public string FENSymbol()
+            {   var p = this.Kind switch {
+                    PieceKind.Pawn => "P*",
+                    PieceKind.King => "K*",
+                    PieceKind.Rook => "R*",
+                    PieceKind.Brawn => "W*",
+                    _ => this.Notation()
+                };
+                    
                 if (this.IsBlack) return p.ToLower();
                 else return p;
             }

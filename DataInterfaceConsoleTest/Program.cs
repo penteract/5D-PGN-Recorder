@@ -34,9 +34,9 @@ namespace DataInterfaceConsoleTest
             int oldCnt = 0;
             string lastRun = "";
             string fen = "";
-			var lastP = di.GetCurrentPlayersTurn();
-			var lastTime = di.GetCurT();
-			System.Media.SoundPlayer player = new System.Media.SoundPlayer("Tick.wav");
+            var lastP = di.GetCurrentPlayersTurn();
+            var lastTime = di.GetCurT();
+            System.Media.SoundPlayer player = new System.Media.SoundPlayer("Tick.wav");
             List<int> times = new List<int>();
             int oldTurn = 0;
             bool written = false;
@@ -46,13 +46,13 @@ namespace DataInterfaceConsoleTest
             var localPlayer = -1;
             while (true)
             {
-				var thisP = di.GetCurrentPlayersTurn();
-				var thisTime = di.GetCurT();
-				if(thisP!=lastP){// Reset timers
-				    lastTime=thisTime;
-					lastP=thisP;
-				}
-				if (lastTime!=0 && (thisTime-1)*3<=(lastTime-1)*2){//Should always tick if thisTime==1 or thisTime==0
+                var thisP = di.GetCurrentPlayersTurn();
+                var thisTime = di.GetCurT();
+                if(thisP!=lastP){// Reset timers
+                    lastTime=thisTime;
+                    lastP=thisP;
+                }
+                if (lastTime!=0 && (thisTime-1)*3<=(lastTime-1)*2){//Should always tick if thisTime==1 or thisTime==0
                     try{
                         player.Play();
                     }
@@ -60,14 +60,14 @@ namespace DataInterfaceConsoleTest
                     }
                     lastTime=thisTime;
                     //System.Media.SystemSounds.Exclamation.Play();
-				}
-				// Potential reasons to beep:
-				// time remaining is a power of 2
-				// 1 minute remaining (only beep once for this?)
-				// half the time you started the turn with
-				// When you use up your increment
-				// when you're significantly behind your opponent
-				
+                }
+                // Potential reasons to beep:
+                // time remaining is a power of 2
+                // 1 minute remaining (only beep once for this?)
+                // half the time you started the turn with
+                // When you use up your increment
+                // when you're significantly behind your opponent
+                
                 var cnt = di.GetChessBoardAmount();
                 var turn = di.GetCurrentPlayersTurn();
                 //turn != oldTurn is there to make sure we record times, but we shouldn't rely 
