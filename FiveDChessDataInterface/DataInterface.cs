@@ -107,13 +107,7 @@ namespace FiveDChessDataInterface
 
         private void CalculatePointers()
         {
-            var bytesToFind = new byte[] { 0x4c, 0x8b, 0x35,
-                0x90, 0x90, 0x90, 0x90,// = 0x55, 0xfa, 0x0c, 0x00 WILDCARDS
-                0x4c, 0x69, 0xf8,
-                0x90, 0x90, 0x90, 0x90,
-                0x4c, 0x89, 0xf0,
-                0x4c, 0x01, 0xf8
-            };
+            var bytesToFind = new byte[] { 0x48, 0x8b, 0x0d, 0x90, 0x90, 0x90, 0x90, 0x49, 0x69 };
 
             var results = MemoryUtil.FindMemoryWithWildcards(GetGameHandle(), GetEntryPoint(), (uint)this.GameProcess.MainModule.ModuleMemorySize, bytesToFind);
 
