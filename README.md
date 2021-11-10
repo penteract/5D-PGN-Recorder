@@ -12,3 +12,5 @@ While it should be stable for the most part, this program may still cause crashe
 
 ## Plans
 Config file (name, which tags to include, sound file, how and whether to include time, always use white's perspective)
+If you close the game then restart it, the recorder should record games from the second run. At the moment it doesn't
+It would save a click or 2 (and make it harder to forget to start the recorder) if the recorder started the game if it's not already running.
