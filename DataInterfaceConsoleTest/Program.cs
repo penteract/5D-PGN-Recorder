@@ -116,7 +116,6 @@ namespace DataInterfaceConsoleTest
                     oldState = state;
                     var cbs = di.GetChessBoards();
 
-                    //Console.Clear();
                     int lastCol = -1;
                     int turnNumber = 0;
                     for (int i = 0; i < cbs.Count; i++)
@@ -132,9 +131,9 @@ namespace DataInterfaceConsoleTest
                         }
                         var board = cbs[mem1.previousBoardId];
                         var mem = board.cbm;
-                        if (mem.moveSourceL==0 && mem.moveSourceT==0 && mem.moveSourceX==0 && mem.moveSourceY==0
-                                && mem.moveDestL==0 && mem.moveDestT==0 && mem.moveDestX==0 && mem.moveDestY==0
-                                && mem1.creatingMoveNumber==mem.moveNumber){
+                        if (mem.moveSourceL<=0 && mem.moveSourceT<=0 && mem.moveSourceX<=0 && mem.moveSourceY<=0
+                                && mem.moveDestL<=0 && mem.moveDestT<=0 && mem.moveDestX<=0 && mem.moveDestY<=0
+                                && (mem1.creatingMoveNumber==mem.moveNumber || mem.moveNumber==-1)){
                             fen+=board1.toFEN(mkL(mem1.timeline),mkT(mem1.turn));
                             continue;
                         }
