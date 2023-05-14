@@ -49,7 +49,7 @@ namespace FiveDChessDataInterface
                             i += 1;
                             x += 1;
                         }
-                        pieces += $"{i}";
+                        pieces += $"{i}"+p.FENSymbol();
                     }
                     else{
                         pieces += p.FENSymbol();
