@@ -40,7 +40,7 @@ namespace FiveDChessDataInterface
             for (int y = height-1; y >= 0; y--)
             {
                 if(y<height-1) pieces+="/";
-                for (int x = 0; x < width; x++)
+                for (int x = 0; x < width;)
                 {
                     var p = Pieces[x*height+y];
                     if(p.IsEmpty){
@@ -49,10 +49,11 @@ namespace FiveDChessDataInterface
                             i += 1;
                             x += 1;
                         }
-                        pieces += $"{i}"+p.FENSymbol();
+                        pieces += $"{i}";
                     }
                     else{
                         pieces += p.FENSymbol();
+                        x+=1;
                     }
                 }
             }
